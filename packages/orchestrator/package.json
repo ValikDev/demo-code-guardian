@@ -15,6 +15,7 @@
     "dev": "tsx watch src/server.ts"
   },
   "dependencies": {
-    "@code-guardian/shared": "workspace:*"
+    "@code-guardian/shared": "workspace:*",
+    "express": "^5.2.1"
   }
 }

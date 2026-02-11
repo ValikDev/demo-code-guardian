@@ -1,0 +1,4 @@
+export const DEFAULT_PORT = 3000
+export const DEFAULT_QUEUE_MAX_SIZE = 10
+export const DEFAULT_QUEUE_MAX_CONCURRENT = 1
+export const DEFAULT_SHUTDOWN_TIMEOUT_MS = 10_000

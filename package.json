@@ -18,13 +18,14 @@
     "dev": "tsx watch packages/orchestrator/src/server.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node --test --experimental-strip-types **/*.test.ts",
+    "test": "node --import tsx --test 'packages/*/src/**/*.test.ts'",
     "typecheck": "tsc --build --noEmit"
   },
   "packageManager": "pnpm@9.15.4",
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@stylistic/eslint-plugin": "^5.8.0",
+    "@types/express": "^5.0.6",
     "@types/node": "^25.2.3",
     "eslint": "^9.39.2",
     "tsx": "^4.21.0",
