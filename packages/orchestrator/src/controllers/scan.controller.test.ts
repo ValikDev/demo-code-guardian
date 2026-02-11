@@ -2,44 +2,36 @@ import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import type { ScanRecord } from '@code-guardian/shared/types'
 import { createApp } from '../app.js'
 import { createJobQueue } from '../services/job-queue.js'
+import { createScanRegistry } from '../services/scan-registry.js'
 
 type TestContext = {
   server: Server
   baseUrl: string
-  scans: Map<string, ScanRecord>
+  registry: ReturnType<typeof createScanRegistry>
   queue: ReturnType<typeof createJobQueue>
 }
 
 function setupTestServer(queueConfig = { maxQueued: 10, maxConcurrent: 1 }): TestContext {
-  const scans = new Map<string, ScanRecord>()
+  const registry = createScanRegistry({ maxEntries: 50, maxVulnsPerScan: 10_000 })
   const queue = createJobQueue(queueConfig)
 
-  // Dummy processor: immediately finishes
+  // Dummy processor: updates via registry
   queue.setProcessor((job) => {
-    const scan = scans.get(job.scanId)
-    if (scan) {
-      scan.status = 'Scanning'
-      scan.updatedAt = new Date()
-      setTimeout(() => {
-        const current = scans.get(job.scanId)
-        if (current) {
-          current.status = 'Finished'
-          current.updatedAt = new Date()
-        }
-        queue.onJobComplete()
-      }, 10)
-    }
+    registry.updateStatus(job.scanId, 'Scanning')
+    setTimeout(() => {
+      registry.updateStatus(job.scanId, 'Finished')
+      queue.onJobComplete()
+    }, 10)
   })
 
-  const app = createApp({ scans, queue })
+  const app = createApp({ registry, queue })
   const server = app.listen(0)
   const { port } = server.address() as AddressInfo
   const baseUrl = `http://localhost:${port}`
 
-  return { server, baseUrl, scans, queue }
+  return { server, baseUrl, registry, queue }
 }
 
 describe('POST /api/scan', () => {
@@ -149,7 +141,6 @@ describe('GET /api/scan/:scanId', () => {
   })
 
   it('returns 200 with scan data for existing scan', async () => {
-    // Create a scan
     const createRes = await fetch(`${ctx.baseUrl}/api/scan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -157,7 +148,6 @@ describe('GET /api/scan/:scanId', () => {
     })
     const { scanId } = await createRes.json() as { scanId: string }
 
-    // Query it
     const res = await fetch(`${ctx.baseUrl}/api/scan/${scanId}`)
     assert.equal(res.status, 200)
 
@@ -170,7 +160,6 @@ describe('GET /api/scan/:scanId', () => {
   })
 
   it('returns Finished status with vulnerabilities after processing', async () => {
-    // Create a scan
     const createRes = await fetch(`${ctx.baseUrl}/api/scan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

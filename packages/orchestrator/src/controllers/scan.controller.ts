@@ -1,47 +1,38 @@
 import { randomUUID } from 'node:crypto'
 import type { Request, Response } from 'express'
-import type { ScanRecord } from '@code-guardian/shared/types'
+import { DEFAULT_RETRY_AFTER_SECONDS } from '../constants.js'
 import type { JobQueue } from '../services/job-queue.js'
+import type { ScanRegistry } from '../services/scan-registry.js'
 
 export type ScanControllerDeps = {
-  scans: Map<string, ScanRecord>
+  registry: ScanRegistry
   queue: JobQueue
 }
 
 export function createScanController(deps: ScanControllerDeps) {
-  const { scans, queue } = deps
+  const { registry, queue } = deps
 
   return {
     startScan(req: Request, res: Response): void {
       const { repoUrl } = req.body as { repoUrl: string }
 
       const scanId = randomUUID()
-      const now = new Date()
-
-      const record: ScanRecord = {
-        scanId,
-        repoUrl,
-        status: 'Queued',
-        vulnerabilities: [],
-        truncated: false,
-        error: null,
-        createdAt: now,
-        updatedAt: now,
-      }
-
-      scans.set(scanId, record)
+      registry.create(scanId, repoUrl)
 
       const enqueued = queue.enqueue({ scanId, repoUrl })
       if (!enqueued) {
-        scans.delete(scanId)
+        registry.updateStatus(scanId, 'Failed')
+        registry.setError(scanId, {
+          code: 'UNKNOWN',
+          message: 'Queue is full',
+        })
         res.status(429).json({
           error: 'Queue is full. Try again later.',
-          retryAfter: 30,
+          retryAfter: DEFAULT_RETRY_AFTER_SECONDS,
         })
         return
       }
 
-      // Return Queued status regardless of how fast the processor picks it up
       res.status(202).json({
         scanId,
         status: 'Queued' as const,
@@ -50,7 +41,7 @@ export function createScanController(deps: ScanControllerDeps) {
 
     getScan(req: Request<{ scanId: string }>, res: Response): void {
       const { scanId } = req.params
-      const record = scans.get(scanId)
+      const record = registry.get(scanId)
 
       if (!record) {
         res.status(404).json({ error: 'Scan not found' })

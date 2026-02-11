@@ -1,11 +1,11 @@
 import express, { type Express } from 'express'
-import type { ScanRecord } from '@code-guardian/shared/types'
 import type { JobQueue } from './services/job-queue.js'
+import type { ScanRegistry } from './services/scan-registry.js'
 import { createScanController } from './controllers/scan.controller.js'
 import { validateUrl } from './middleware/validate-url.js'
 
 export type AppContext = {
-  scans: Map<string, ScanRecord>
+  registry: ScanRegistry
   queue: JobQueue
 }
 

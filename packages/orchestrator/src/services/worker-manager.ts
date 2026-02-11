@@ -1,8 +1,8 @@
-import type { ScanRecord } from '@code-guardian/shared/types'
 import type { JobQueue } from './job-queue.js'
+import type { ScanRegistry } from './scan-registry.js'
 
 export type WorkerManagerDeps = {
-  scans: Map<string, ScanRecord>
+  registry: ScanRegistry
   queue: JobQueue
 }
 
@@ -16,23 +16,12 @@ export function runJob(
   _repoUrl: string,
   deps: WorkerManagerDeps,
 ): void {
-  const { scans, queue } = deps
-  const scan = scans.get(scanId)
+  const { registry, queue } = deps
 
-  if (!scan) {
-    queue.onJobComplete()
-    return
-  }
-
-  scan.status = 'Scanning'
-  scan.updatedAt = new Date()
+  registry.updateStatus(scanId, 'Scanning')
 
   setTimeout(() => {
-    const current = scans.get(scanId)
-    if (current) {
-      current.status = 'Finished'
-      current.updatedAt = new Date()
-    }
+    registry.updateStatus(scanId, 'Finished')
     queue.onJobComplete()
   }, 100)
 }
