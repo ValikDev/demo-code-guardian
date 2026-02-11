@@ -1,0 +1,26 @@
+{
+  "name": "@code-guardian/shared",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "author": "ValikDev <ValikDev@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ValikDev/demo-code-guardian.git",
+    "directory": "packages/shared"
+  },
+  "homepage": "https://github.com/ValikDev/demo-code-guardian",
+  "exports": {
+    "./types": {
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    },
+    "./ipc-protocol": {
+      "import": "./dist/ipc-protocol.js",
+      "types": "./dist/ipc-protocol.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build"
+  }
+}

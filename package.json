@@ -1,0 +1,34 @@
+{
+  "name": "code-guardian",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "author": "ValikDev <ValikDev@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ValikDev/demo-code-guardian.git"
+  },
+  "homepage": "https://github.com/ValikDev/demo-code-guardian",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "build:clean": "tsc --build --clean && tsc --build",
+    "dev": "tsx watch packages/orchestrator/src/server.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "node --test --experimental-strip-types **/*.test.ts",
+    "typecheck": "tsc --build --noEmit"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@stylistic/eslint-plugin": "^5.8.0",
+    "@types/node": "^25.2.3",
+    "eslint": "^9.39.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0"
+  }
+}
