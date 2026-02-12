@@ -1,6 +1,7 @@
 import { isOrchestratorMessage, type WorkerMessage } from '@code-guardian/shared/ipc-protocol'
 import type { ScanError } from '@code-guardian/shared/types'
 import { cloneRepo, type CloneResult } from './git-clone.js'
+import { runTrivy, type TrivyResult } from './trivy-scanner.js'
 
 function send(msg: WorkerMessage): void {
   if (process.send) {
@@ -18,6 +19,7 @@ process.on('message', (raw: unknown) => {
 
 async function processJob(scanId: string, repoUrl: string): Promise<void> {
   let cloneResult: CloneResult | null = null
+  let trivyResult: TrivyResult | null = null
 
   try {
     send({ type: 'status', scanId, status: 'Scanning' })
@@ -25,8 +27,10 @@ async function processJob(scanId: string, repoUrl: string): Promise<void> {
     // Step 1: Clone
     cloneResult = await cloneRepo(repoUrl)
 
-    // TODO: Step 2: Run Trivy on cloneResult.repoDir
-    // TODO: Step 3: Stream-parse Trivy JSON output
+    // Step 2: Run Trivy
+    trivyResult = await runTrivy(cloneResult.repoDir)
+
+    // TODO: Step 3: Stream-parse trivyResult.outputPath
 
     // Dummy: send empty results and finish
     send({ type: 'vulns', scanId, vulnerabilities: [] })
@@ -38,6 +42,9 @@ async function processJob(scanId: string, repoUrl: string): Promise<void> {
 
     send({ type: 'error', scanId, error: scanError })
   } finally {
+    if (trivyResult) {
+      await trivyResult.cleanup()
+    }
     if (cloneResult) {
       await cloneResult.cleanup()
     }

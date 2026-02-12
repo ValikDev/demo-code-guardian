@@ -3,7 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
 import type { ScanError } from '@code-guardian/shared/types'
-import { DEFAULT_CLONE_TIMEOUT_MS, TEMP_PREFIX } from './constants.js'
+import { DEFAULT_CLONE_TIMEOUT_MS, EXEC_MAX_BUFFER, TEMP_PREFIX } from './constants.js'
 
 export type CloneResult = {
   repoDir: string
@@ -52,7 +52,7 @@ function execGit(args: string[], timeoutMs: number): Promise<string> {
   return new Promise((resolve, reject) => {
     execFile('git', args, {
       timeout: timeoutMs,
-      maxBuffer: 10 * 1024 * 1024,
+      maxBuffer: EXEC_MAX_BUFFER,
       env: {
         ...process.env,
         // Disable interactive prompts (e.g. for credentials)
