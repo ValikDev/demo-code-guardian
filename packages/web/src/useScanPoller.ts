@@ -1,9 +1,9 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { getScan, type ScanResponse } from './api'
+import { getScan, type ApiMode, type ScanResponse } from './api'
 
 const POLL_INTERVAL_MS = 2_000
 
-export function useScanPoller(scanId: string | null) {
+export function useScanPoller(scanId: string | null, mode: ApiMode) {
   const [scan, setScan] = useState<ScanResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -26,7 +26,7 @@ export function useScanPoller(scanId: string | null) {
 
     const poll = async () => {
       try {
-        const data = await getScan(scanId)
+        const data = await getScan(scanId, mode)
         if (!active) return
         setScan(data)
 
@@ -47,7 +47,7 @@ export function useScanPoller(scanId: string | null) {
       active = false
       stop()
     }
-  }, [scanId, stop])
+  }, [scanId, mode, stop])
 
   return { scan, error }
 }

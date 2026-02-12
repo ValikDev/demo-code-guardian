@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { startScan } from './api'
+import { startScan, type ApiMode } from './api'
 import { useScanPoller } from './useScanPoller'
 import './styles.css'
 
@@ -15,8 +15,9 @@ export function App() {
   const [scanId, setScanId] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [apiMode, setApiMode] = useState<ApiMode>('rest')
 
-  const { scan, error: pollError } = useScanPoller(scanId)
+  const { scan, error: pollError } = useScanPoller(scanId, apiMode)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -25,7 +26,7 @@ export function App() {
     setLoading(true)
 
     try {
-      const result = await startScan(repoUrl)
+      const result = await startScan(repoUrl, apiMode)
       setScanId(result.scanId)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : String(err))
@@ -44,6 +45,23 @@ export function App() {
           Security vulnerability scanner powered by Trivy
         </p>
       </header>
+
+      <div className="mb-6 flex items-center justify-center gap-1 text-xs">
+        {(['rest', 'graphql'] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => setApiMode(mode)}
+            className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
+              apiMode === mode
+                ? 'bg-indigo-600 text-white'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            {mode === 'rest' ? 'REST' : 'GraphQL'}
+          </button>
+        ))}
+      </div>
 
       <form onSubmit={(e) => void handleSubmit(e)} className="mb-8">
         <div className="flex gap-2">
@@ -161,7 +179,7 @@ export function App() {
           {!isTerminal && scan && (
             <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
               <span className="size-3.5 animate-spin rounded-full border-2 border-slate-600 border-t-indigo-500" />
-              Polling every 2s...
+              Polling via {apiMode === 'graphql' ? 'GraphQL' : 'REST'} every 2s...
             </div>
           )}
         </div>
