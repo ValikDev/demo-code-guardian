@@ -21,7 +21,6 @@ export function createScanController(deps: ScanControllerDeps) {
 
       const enqueued = queue.enqueue({ scanId, repoUrl })
       if (!enqueued) {
-        registry.updateStatus(scanId, 'Failed')
         registry.setError(scanId, {
           code: 'UNKNOWN',
           message: 'Queue is full',

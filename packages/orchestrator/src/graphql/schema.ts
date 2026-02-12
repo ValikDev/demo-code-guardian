@@ -135,7 +135,6 @@ const MutationType = new GraphQLObjectType({
 
         const enqueued = ctx.queue.enqueue({ scanId, repoUrl: args.repoUrl })
         if (!enqueued) {
-          ctx.registry.updateStatus(scanId, 'Failed')
           ctx.registry.setError(scanId, {
             code: 'UNKNOWN',
             message: 'Queue is full',
