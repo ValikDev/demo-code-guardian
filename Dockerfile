@@ -43,24 +43,17 @@ COPY packages/shared/package.json packages/shared/
 COPY packages/orchestrator/package.json packages/orchestrator/
 COPY packages/engine/package.json packages/engine/
 
-RUN pnpm install --frozen-lockfile --prod=false
+RUN pnpm install --frozen-lockfile --prod
 
-# Copy built output and source (tsx needs .ts source for worker fork)
+# Copy compiled output only — no .ts source or tsconfig needed at runtime
 COPY --from=build /app/packages/shared/dist packages/shared/dist
 COPY --from=build /app/packages/orchestrator/dist packages/orchestrator/dist
 COPY --from=build /app/packages/engine/dist packages/engine/dist
-COPY packages/shared/src packages/shared/src
-COPY packages/orchestrator/src packages/orchestrator/src
-COPY packages/engine/src packages/engine/src
-COPY tsconfig.base.json tsconfig.json ./
-COPY packages/shared/tsconfig.json packages/shared/
-COPY packages/orchestrator/tsconfig.json packages/orchestrator/
-COPY packages/engine/tsconfig.json packages/engine/
 
 ENV NODE_ENV=production
 ENV PORT=4000
 
 EXPOSE 4000
 
-# Run orchestrator with strict heap limit for OOM safety
-CMD ["node", "--max-old-space-size=150", "--import", "tsx", "packages/orchestrator/src/server.ts"]
+# Run compiled JS with strict heap limit for OOM safety
+CMD ["node", "--max-old-space-size=150", "packages/orchestrator/dist/server.js"]

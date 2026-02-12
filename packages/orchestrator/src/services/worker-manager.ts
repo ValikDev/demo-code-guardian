@@ -21,10 +21,17 @@ export type WorkerManagerDeps = {
   queue: JobQueue
 }
 
-const WORKER_MODULE = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../../../engine/src/worker.ts',
-)
+/**
+ * Detect whether we're running from compiled JS (dist/) or TypeScript source (src/).
+ * This determines the worker module path and whether tsx is needed.
+ */
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const isCompiledJs = __filename.endsWith('.js')
+
+const WORKER_MODULE = isCompiledJs
+  ? path.resolve(__dirname, '../../../engine/dist/worker.js')
+  : path.resolve(__dirname, '../../../engine/src/worker.ts')
 
 /** Active child processes, tracked for graceful shutdown. */
 const activeWorkers = new Set<ChildProcess>()
@@ -60,7 +67,7 @@ export function runJob(
   try {
     child = fork(WORKER_MODULE, {
       execArgv: [
-        '--import', 'tsx',
+        ...(isCompiledJs ? [] : ['--import', 'tsx']),
         `--max-old-space-size=${maxOldSpaceSize}`,
       ],
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
