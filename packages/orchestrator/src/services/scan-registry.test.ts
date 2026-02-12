@@ -130,9 +130,11 @@ describe('createScanRegistry', () => {
       const registry = createScanRegistry({ maxEntries: 2, maxVulnsPerScan: 100 })
 
       registry.create('scan-1', 'https://github.com/owner/repo1')
+      registry.updateStatus('scan-1', 'Scanning')
       registry.updateStatus('scan-1', 'Finished')
 
       registry.create('scan-2', 'https://github.com/owner/repo2')
+      registry.updateStatus('scan-2', 'Scanning')
       registry.updateStatus('scan-2', 'Finished')
 
       // This should trigger eviction of scan-1
@@ -151,6 +153,7 @@ describe('createScanRegistry', () => {
       registry.updateStatus('scan-1', 'Scanning') // active
 
       registry.create('scan-2', 'https://github.com/owner/repo2')
+      registry.updateStatus('scan-2', 'Scanning')
       registry.updateStatus('scan-2', 'Finished') // terminal
 
       // Should evict scan-2 (Finished) not scan-1 (Scanning)

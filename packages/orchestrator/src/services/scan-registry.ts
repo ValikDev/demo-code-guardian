@@ -1,5 +1,17 @@
 import type { ScanError, ScanRecord, ScanStatus, Vulnerability } from '@code-guardian/shared/types'
 
+/** Allowed state transitions. Terminal states (Finished, Failed) have no outgoing edges. */
+const VALID_TRANSITIONS: Record<ScanStatus, readonly ScanStatus[]> = {
+  Queued:   ['Scanning', 'Failed'],
+  Scanning: ['Finished', 'Failed'],
+  Finished: [],
+  Failed:   [],
+}
+
+function canTransition(from: ScanStatus, to: ScanStatus): boolean {
+  return (VALID_TRANSITIONS[from] as readonly string[]).includes(to)
+}
+
 export type ScanRegistryConfig = {
   maxEntries: number
   maxVulnsPerScan: number
@@ -53,6 +65,7 @@ export function createScanRegistry(config: ScanRegistryConfig) {
     updateStatus(scanId: string, status: ScanStatus): void {
       const record = scans.get(scanId)
       if (!record) return
+      if (!canTransition(record.status, status)) return
       record.status = status
       record.updatedAt = new Date()
     },
@@ -80,6 +93,7 @@ export function createScanRegistry(config: ScanRegistryConfig) {
     setError(scanId: string, error: ScanError): void {
       const record = scans.get(scanId)
       if (!record) return
+      if (!canTransition(record.status, 'Failed')) return
       record.error = error
       record.status = 'Failed'
       record.updatedAt = new Date()
