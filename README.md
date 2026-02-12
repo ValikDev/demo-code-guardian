@@ -58,10 +58,22 @@ node --max-old-space-size=150 --import tsx packages/orchestrator/src/server.ts
 
 ## Test
 
-### Automated tests (52 tests)
+### Unit tests (fast, no network or external tools required)
 
 ```bash
 pnpm test
+```
+
+### Integration tests (requires network + trivy installed)
+
+```bash
+pnpm test:integration
+```
+
+### All tests
+
+```bash
+pnpm test:all
 ```
 
 ### Lint & type-check

@@ -14,6 +14,8 @@ import {
 export type WorkerManagerConfig = {
   maxOldSpaceSize?: number
   timeoutMs?: number
+  /** Override worker module path (for testing with a mock worker). */
+  workerModule?: string
 }
 
 export type WorkerManagerDeps = {
@@ -45,6 +47,7 @@ export function runJob(
   const { registry, queue } = deps
   const maxOldSpaceSize = config.maxOldSpaceSize ?? DEFAULT_WORKER_MAX_OLD_SPACE_SIZE
   const timeoutMs = config.timeoutMs ?? DEFAULT_WORKER_TIMEOUT_MS
+  const workerModule = config.workerModule ?? WORKER_MODULE
 
   let child: ChildProcess | null = null
   let timeoutHandle: ReturnType<typeof setTimeout> | null = null
@@ -65,7 +68,7 @@ export function runJob(
   }
 
   try {
-    child = fork(WORKER_MODULE, {
+    child = fork(workerModule, {
       execArgv: [
         ...(isCompiledJs ? [] : ['--import', 'tsx']),
         `--max-old-space-size=${maxOldSpaceSize}`,

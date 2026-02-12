@@ -21,6 +21,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "node --import tsx --test 'packages/*/src/**/*.test.ts'",
+    "test:integration": "node --import tsx --test 'packages/*/src/**/*.integration.ts'",
+    "test:all": "node --import tsx --test 'packages/*/src/**/*.test.ts' 'packages/*/src/**/*.integration.ts'",
     "typecheck": "tsc --build --emitDeclarationOnly"
   },
   "packageManager": "pnpm@9.15.4",
