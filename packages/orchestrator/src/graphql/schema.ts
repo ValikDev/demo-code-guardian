@@ -10,6 +10,7 @@ import {
 } from 'graphql'
 import type { JobQueue } from '../services/job-queue.js'
 import type { ScanRegistry } from '../services/scan-registry.js'
+import { assertValidRepoUrl } from '../middleware/validate-url.js'
 
 export type GraphQLContext = {
   registry: ScanRegistry
@@ -124,6 +125,11 @@ const MutationType = new GraphQLObjectType({
         repoUrl: { type: new GraphQLNonNull(GraphQLString) },
       },
       resolve: (_root, args: { repoUrl: string }, ctx: GraphQLContext) => {
+        const urlError = assertValidRepoUrl(args.repoUrl)
+        if (urlError) {
+          return { scan: null, error: { message: urlError } }
+        }
+
         const scanId = randomUUID()
         ctx.registry.create(scanId, args.repoUrl)
 
