@@ -37,7 +37,7 @@ RUN corepack enable pnpm
 
 WORKDIR /app
 
-# Copy dependency manifests and install production-only deps
+# Copy dependency manifests and install production-only deps (needs root for global store)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/shared/package.json packages/shared/
 COPY packages/orchestrator/package.json packages/orchestrator/
@@ -49,6 +49,11 @@ RUN pnpm install --frozen-lockfile --prod
 COPY --from=build /app/packages/shared/dist packages/shared/dist
 COPY --from=build /app/packages/orchestrator/dist packages/orchestrator/dist
 COPY --from=build /app/packages/engine/dist packages/engine/dist
+
+# Hand ownership to the non-root node user (uid 1000, ships with node:*-slim)
+RUN chown -R node:node /app
+
+USER node
 
 ENV NODE_ENV=production
 ENV PORT=4000
