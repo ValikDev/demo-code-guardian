@@ -1,4 +1,4 @@
-# Code Guardian
+# Demo: Code Guardian
 
 Backend service wrapping the [Trivy](https://trivy.dev/) security scanner.
 Designed to process massive scan reports (500 MB+) under strict memory constraints (256 MB RAM) without crashing.
@@ -11,6 +11,8 @@ Designed to process massive scan reports (500 MB+) under strict memory constrain
 - Bounded queue: rejects excess jobs with `429`, capped in-memory registry with LRU eviction
 - Dual API: REST (`/api/scan`) and GraphQL (`/graphql`) coexist on the same server
 - React frontend: scan form, 2s polling, vulnerability display, REST/GraphQL toggle
+
+![Code Guardian Screenshot](docs/images/screenshot.png)
 
 ## Prerequisites
 
@@ -25,7 +27,7 @@ Designed to process massive scan reports (500 MB+) under strict memory constrain
 ## Install
 
 ```bash
-git clone <repo-url> && cd cg-service
+git clone git@github.com:ValikDev/demo-code-guardian.git && cd demo-code-guardian
 pnpm install
 ```
 
@@ -37,7 +39,7 @@ pnpm install
 # Backend only (port 4000, hot reload)
 pnpm dev
 
-# Frontend only (port 5173, proxies /api → :4000)
+# Frontend only (port 5173, proxies /api + /graphql → :4000)
 pnpm dev:web
 
 # Both at once
@@ -80,7 +82,7 @@ pnpm test:all
 
 ```bash
 pnpm lint
-pnpm build        # tsc --build
+pnpm typecheck
 ```
 
 ### Manual (curl)
@@ -106,30 +108,30 @@ curl http://localhost:4000/health
 ## Architecture
 
 ```
-┌─────────────┐     ┌──────────────────────────────────────────────────┐
-│   Browser    │     │              Orchestrator (Node.js)              │
-│  React App   │────▶│                                                  │
+┌────────────-─┐     ┌────────────────────────────────────────────────┐
+│   Browser    │     │              Orchestrator (Node.js)            │
+│  React App   │────▶│                                                │
 │  (Vite)      │     │  ┌────────────┐  ┌───────────┐  ┌───────────┐  │
-└─────────────┘     │  │ Controller │  │ Job Queue │  │  Registry  │  │
+└────────────-─┘     │  │ Controller │  │ Job Queue │  │ Registry  │  │
                      │  │ REST + GQL │─▶│ bounded   │─▶│ bounded   │  │
                      │  └────────────┘  │ FIFO      │  │ LRU evict │  │
                      │                  └─────┬─────┘  └─────▲─────┘  │
-                     │                        │              │         │
-                     │                  ┌─────▼─────┐        │         │
-                     │                  │  Worker   │   IPC  │         │
-                     │                  │  Manager  │────────┘         │
-                     │                  └─────┬─────┘                  │
-                     └────────────────────────┼────────────────────────┘
+                     │                        │              │        │
+                     │                  ┌─────▼─────┐        │        │
+                     │                  │  Worker   │   IPC  │        │
+                     │                  │  Manager  │────────┘        │
+                     │                  └─────┬─────┘                 │
+                     └────────────────────────┼───────────────────────┘
                                               │ fork()
                      ┌────────────────────────▼────────────────────────┐
-                     │          Engine (forked child process)           │
-                     │          --max-old-space-size=150                │
-                     │                                                  │
+                     │          Engine (forked child process)          │
+                     │          --max-old-space-size=150               │
+                     │                                                 │
                      │  git clone ──▶ trivy fs ──▶ stream-json parse   │
                      │  (shallow)     (JSON out)   (object-by-object)  │
-                     │                                                  │
+                     │                                                 │
                      │  Sends IPC: status | vulns (batches) | error    │
-                     └──────────────────────────────────────────────────┘
+                     └─────────────────────────────────────────────────┘
 ```
 
 ### Happy path sequence
@@ -216,7 +218,7 @@ Client              Orchestrator                    Engine (fork)
   │  202 {scanId,Queued} │                               │
   │◀─────────────────────│                               │  ... hangs ...
   │                      │                               │
-  │                      │  setTimeout fires (5 min)     │
+  │                      │  setTimeout fires (8 min)     │
   │                      │  registry → Failed {TIMEOUT}  │
   │                      │  child.kill(SIGKILL)          │
   │                      │  queue.onJobComplete()        │
