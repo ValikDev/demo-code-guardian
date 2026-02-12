@@ -14,6 +14,10 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@code-guardian/shared": "workspace:*"
+    "@code-guardian/shared": "workspace:*",
+    "stream-json": "^1.9.1"
+  },
+  "devDependencies": {
+    "@types/stream-json": "^1.7.8"
   }
 }

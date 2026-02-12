@@ -2,6 +2,7 @@ import { isOrchestratorMessage, type WorkerMessage } from '@code-guardian/shared
 import type { ScanError } from '@code-guardian/shared/types'
 import { cloneRepo, type CloneResult } from './git-clone.js'
 import { runTrivy, type TrivyResult } from './trivy-scanner.js'
+import { parseTrivyStream } from './stream-parser.js'
 
 function send(msg: WorkerMessage): void {
   if (process.send) {
@@ -30,10 +31,11 @@ async function processJob(scanId: string, repoUrl: string): Promise<void> {
     // Step 2: Run Trivy
     trivyResult = await runTrivy(cloneResult.repoDir)
 
-    // TODO: Step 3: Stream-parse trivyResult.outputPath
+    // Step 3: Stream-parse CRITICAL vulns and send in batches via IPC
+    await parseTrivyStream(trivyResult.outputPath, (batch) => {
+      send({ type: 'vulns', scanId, vulnerabilities: batch })
+    })
 
-    // Dummy: send empty results and finish
-    send({ type: 'vulns', scanId, vulnerabilities: [] })
     send({ type: 'status', scanId, status: 'Finished' })
   } catch (err) {
     const scanError = isScanError(err)

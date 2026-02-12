@@ -38,6 +38,13 @@ importers:
       '@code-guardian/shared':
         specifier: workspace:*
         version: link:../shared
+      stream-json:
+        specifier: ^1.9.1
+        version: 1.9.1
+    devDependencies:
+      '@types/stream-json':
+        specifier: ^1.7.8
+        version: 1.7.8
 
   packages/orchestrator:
     dependencies:
@@ -303,6 +310,12 @@ packages:
 
   '@types/serve-static@2.2.0':
     resolution: {integrity: sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ==}
+
+  '@types/stream-chain@2.1.0':
+    resolution: {integrity: sha512-guDyAl6s/CAzXUOWpGK2bHvdiopLIwpGu8v10+lb9hnQOyo4oj/ZUQFOvqFjKGsE3wJP1fpIesCcMvbXuWsqOg==}
+
+  '@types/stream-json@1.7.8':
+    resolution: {integrity: sha512-MU1OB1eFLcYWd1LjwKXrxdoPtXSRzRmAnnxs4Js/ayB5O/NvHraWwuOaqMWIebpYwM6khFlsJOHEhI9xK/ab4Q==}
 
   '@typescript-eslint/eslint-plugin@8.55.0':
     resolution: {integrity: sha512-1y/MVSz0NglV1ijHC8OT49mPJ4qhPYjiK08YUQVbIOyu+5k862LKUHFkpKHWu//zmr7hDR2rhwUm6gnCGNmGBQ==}
@@ -876,6 +889,12 @@ packages:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
 
+  stream-chain@2.2.5:
+    resolution: {integrity: sha512-1TJmBx6aSWqZ4tx7aTpBDXK0/e2hhcNSTV8+CbFJtDjbb+I1mZ8lHit0Grw9GRT+6JbIrrDd8esncgBi8aBXGA==}
+
+  stream-json@1.9.1:
+    resolution: {integrity: sha512-uWkjJ+2Nt/LO9Z/JyKZbMusL8Dkh97uUBTv3AJQ74y07lVahLY4eEFsPsE97pxYBwr8nnjMAIch5eqI0gPShyw==}
+
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
@@ -1144,6 +1163,15 @@ snapshots:
     dependencies:
       '@types/http-errors': 2.0.5
       '@types/node': 25.2.3
+
+  '@types/stream-chain@2.1.0':
+    dependencies:
+      '@types/node': 25.2.3
+
+  '@types/stream-json@1.7.8':
+    dependencies:
+      '@types/node': 25.2.3
+      '@types/stream-chain': 2.1.0
 
   '@typescript-eslint/eslint-plugin@8.55.0(@typescript-eslint/parser@8.55.0(eslint@9.39.2)(typescript@5.9.3))(eslint@9.39.2)(typescript@5.9.3)':
     dependencies:
@@ -1801,6 +1829,12 @@ snapshots:
       side-channel-weakmap: 1.0.2
 
   statuses@2.0.2: {}
+
+  stream-chain@2.2.5: {}
+
+  stream-json@1.9.1:
+    dependencies:
+      stream-chain: 2.2.5
 
   strip-json-comments@3.1.1: {}
 
