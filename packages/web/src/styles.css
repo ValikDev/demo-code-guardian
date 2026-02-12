@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: monospace;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@utility animate-pulse-badge {
+  animation: pulse-badge 1.5s ease-in-out infinite;
+}

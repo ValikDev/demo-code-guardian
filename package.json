@@ -16,6 +16,8 @@
     "build": "tsc --build",
     "build:clean": "tsc --build --clean && tsc --build",
     "dev": "tsx watch packages/orchestrator/src/server.ts",
+    "dev:web": "pnpm --filter @code-guardian/web dev",
+    "dev:all": "pnpm dev & pnpm dev:web",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "node --import tsx --test 'packages/*/src/**/*.test.ts'",

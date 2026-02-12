@@ -28,8 +28,16 @@ export default defineConfig([
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
-
-      // Forbidden patterns: ban fs.readFile and JSON.parse on scan results
+    },
+  },
+  // Forbidden patterns: backend-only (ban fs.readFile on scan results)
+  {
+    files: [
+      'packages/orchestrator/**/*.ts',
+      'packages/engine/**/*.ts',
+      'packages/shared/**/*.ts',
+    ],
+    rules: {
       'no-restricted-syntax': [
         'error',
         {
