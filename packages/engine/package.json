@@ -1,0 +1,23 @@
+{
+  "name": "@code-guardian/engine",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "author": "ValikDev <ValikDev@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ValikDev/demo-code-guardian.git",
+    "directory": "packages/engine"
+  },
+  "homepage": "https://github.com/ValikDev/demo-code-guardian",
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@code-guardian/shared": "workspace:*",
+    "stream-json": "^1.9.1"
+  },
+  "devDependencies": {
+    "@types/stream-json": "^1.7.8"
+  }
+}

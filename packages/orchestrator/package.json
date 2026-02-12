@@ -1,0 +1,23 @@
+{
+  "name": "@code-guardian/orchestrator",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "author": "ValikDev <ValikDev@users.noreply.github.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ValikDev/demo-code-guardian.git",
+    "directory": "packages/orchestrator"
+  },
+  "homepage": "https://github.com/ValikDev/demo-code-guardian",
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsx watch src/server.ts"
+  },
+  "dependencies": {
+    "@code-guardian/shared": "workspace:*",
+    "express": "^5.2.1",
+    "graphql": "^16.12.0",
+    "graphql-http": "^1.22.4"
+  }
+}
