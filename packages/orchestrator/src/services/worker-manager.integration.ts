@@ -1,3 +1,13 @@
+/**
+ * Integration tests for the full worker pipeline (fork → git clone → trivy → stream-parse).
+ *
+ * Prerequisites (tests FAIL if not met — do not skip):
+ *   - `git` binary installed and on PATH
+ *   - `trivy` binary installed and on PATH
+ *   - Network access to github.com
+ *
+ * Run via: pnpm test:integration
+ */
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { createScanRegistry } from './scan-registry.js'
@@ -13,7 +23,7 @@ function createDeps() {
 function waitForTerminal(
   deps: ReturnType<typeof createDeps>,
   scanId: string,
-  timeoutMs = 10_000,
+  timeoutMs = 300_000,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const interval = setInterval(() => {
@@ -32,7 +42,7 @@ function waitForTerminal(
   })
 }
 
-describe('worker-manager (fork-based)', () => {
+describe('worker-manager (integration)', () => {
   it('runs a dummy job to completion via forked worker', async () => {
     const deps = createDeps()
     const scanId = 'test-success-1'
