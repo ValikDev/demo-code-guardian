@@ -117,16 +117,21 @@ export function runJob(
     const isTerminal = record?.status === 'Finished' || record?.status === 'Failed'
 
     if (!isTerminal) {
-      const isOom = stderrChunks.includes('JavaScript heap out of memory')
+      // V8 heap exhaustion writes to stderr before aborting (SIGABRT).
+      // SIGKILL without stderr evidence typically comes from the container
+      // cgroup OOM killer, which is a distinct but related scenario.
+      const v8Oom = stderrChunks.includes('JavaScript heap out of memory')
         || stderrChunks.includes('FATAL ERROR')
-        || signal === 'SIGKILL'
+      const cgroupOom = signal === 'SIGKILL' && !v8Oom
 
-      registry.setError(scanId, {
-        code: isOom ? 'OOM' : 'UNKNOWN',
-        message: isOom
-          ? 'Worker ran out of memory'
-          : `Worker exited unexpectedly (code=${code}, signal=${signal})`,
-      })
+      const code_ = v8Oom || cgroupOom ? 'OOM' : 'UNKNOWN'
+      const message = v8Oom
+        ? 'Worker ran out of memory (V8 heap limit exceeded)'
+        : cgroupOom
+          ? 'Worker was killed by the OS (likely container OOM killer)'
+          : `Worker exited unexpectedly (code=${code}, signal=${signal})`
+
+      registry.setError(scanId, { code: code_, message })
     }
 
     settle()
