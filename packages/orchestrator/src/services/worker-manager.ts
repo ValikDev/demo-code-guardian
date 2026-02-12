@@ -8,6 +8,7 @@ import type { ScanRegistry } from './scan-registry.js'
 import {
   DEFAULT_WORKER_MAX_OLD_SPACE_SIZE,
   DEFAULT_WORKER_TIMEOUT_MS,
+  DEFAULT_WORKER_SHUTDOWN_GRACE_MS,
 } from '../constants.js'
 
 export type WorkerManagerConfig = {
@@ -24,6 +25,9 @@ const WORKER_MODULE = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../../../engine/src/worker.ts',
 )
+
+/** Active child processes, tracked for graceful shutdown. */
+const activeWorkers = new Set<ChildProcess>()
 
 export function runJob(
   scanId: string,
@@ -48,6 +52,8 @@ export function runJob(
       timeoutHandle = null
     }
 
+    if (child) activeWorkers.delete(child)
+
     queue.onJobComplete()
   }
 
@@ -68,6 +74,8 @@ export function runJob(
     settle()
     return
   }
+
+  activeWorkers.add(child)
 
   // Timeout guard
   timeoutHandle = setTimeout(() => {
@@ -153,4 +161,39 @@ export function runJob(
     payload: { scanId, repoUrl },
   }
   child.send(startMsg)
+}
+
+/**
+ * Gracefully shut down all active workers.
+ * Sends SIGTERM first, then SIGKILL after a grace period.
+ * Resolves once every worker has exited.
+ */
+export function shutdownWorkers(
+  graceMs: number = DEFAULT_WORKER_SHUTDOWN_GRACE_MS,
+): Promise<void> {
+  if (activeWorkers.size === 0) return Promise.resolve()
+
+  return new Promise((resolve) => {
+    const workers = [...activeWorkers]
+    let remaining = workers.length
+
+    function onExit(): void {
+      remaining--
+      if (remaining <= 0) resolve()
+    }
+
+    for (const w of workers) {
+      w.once('exit', onExit)
+      w.kill('SIGTERM')
+    }
+
+    // Force-kill any stragglers after the grace period
+    setTimeout(() => {
+      for (const w of workers) {
+        if (w.exitCode === null && w.signalCode === null) {
+          w.kill('SIGKILL')
+        }
+      }
+    }, graceMs).unref()
+  })
 }

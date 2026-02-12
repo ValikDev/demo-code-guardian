@@ -9,7 +9,7 @@ import {
 } from './constants.js'
 import { createJobQueue } from './services/job-queue.js'
 import { createScanRegistry } from './services/scan-registry.js'
-import { runJob } from './services/worker-manager.js'
+import { runJob, shutdownWorkers } from './services/worker-manager.js'
 
 const port = parseInt(process.env.PORT ?? String(DEFAULT_PORT), 10)
 const maxQueued = parseInt(process.env.QUEUE_MAX_SIZE ?? String(DEFAULT_QUEUE_MAX_SIZE), 10)
@@ -41,9 +41,16 @@ const server = app.listen(port, () => {
 
 function shutdown(signal: string): void {
   console.log(`\nReceived ${signal}, shutting down...`)
+
   server.close(() => {
     console.log('HTTP server closed')
-    process.exit(0)
+
+    shutdownWorkers().then(() => {
+      console.log('All workers terminated')
+      process.exit(0)
+    }).catch(() => {
+      process.exit(1)
+    })
   })
 
   setTimeout(() => {
