@@ -54,9 +54,17 @@ function execGit(args: string[], timeoutMs: number): Promise<string> {
       timeout: timeoutMs,
       maxBuffer: EXEC_MAX_BUFFER,
       env: {
-        ...process.env,
+        // Allowlist only what git needs — avoid leaking secrets from the parent env.
+        PATH: process.env.PATH,
+        HOME: process.env.HOME,
+        TMPDIR: process.env.TMPDIR,
         // Disable interactive prompts (e.g. for credentials)
         GIT_TERMINAL_PROMPT: '0',
+        // Allow corporate proxies / custom CA bundles to propagate if set
+        HTTP_PROXY: process.env.HTTP_PROXY,
+        HTTPS_PROXY: process.env.HTTPS_PROXY,
+        NO_PROXY: process.env.NO_PROXY,
+        SSL_CERT_FILE: process.env.SSL_CERT_FILE,
       },
     }, (error, stdout, stderr) => {
       if (error) {

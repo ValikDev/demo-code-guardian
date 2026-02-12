@@ -74,7 +74,16 @@ export function runJob(
         `--max-old-space-size=${maxOldSpaceSize}`,
       ],
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-      env: { ...process.env, NODE_OPTIONS: '' },
+      env: {
+        // Allowlist only the variables the worker needs — avoid leaking
+        // secrets (API keys, DB credentials, etc.) from the parent env.
+        PATH: process.env.PATH,
+        HOME: process.env.HOME,
+        TMPDIR: process.env.TMPDIR,
+        NODE_ENV: process.env.NODE_ENV,
+        // Prevent NODE_OPTIONS from overriding the explicit execArgv flags
+        NODE_OPTIONS: '',
+      },
     })
   } catch (err) {
     registry.setError(scanId, {
