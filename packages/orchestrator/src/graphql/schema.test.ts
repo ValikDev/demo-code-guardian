@@ -141,6 +141,14 @@ describe('GraphQL startScan mutation', () => {
     assert.match(body.data.startScan.error.message, /GitHub/)
   })
 
+  it('returns error for URL with embedded credentials (credential leakage prevention)', async () => {
+    const body = await gql(ctx.baseUrl, START_SCAN, { repoUrl: 'https://token:x-oauth-basic@github.com/owner/repo' })
+
+    assert.equal(body.data?.startScan?.scan, null)
+    assert.ok(body.data?.startScan?.error)
+    assert.match(body.data.startScan.error.message, /credentials/)
+  })
+
   it('returns error when queue is full', async () => {
     ctx.server.close()
     ctx = setupTestServer({ maxQueued: 1, maxConcurrent: 0 })

@@ -68,4 +68,22 @@ describe('assertValidRepoUrl', () => {
     assert.ok(error)
     assert.match(error, /GitHub/)
   })
+
+  it('rejects URLs with embedded username', () => {
+    const error = assertValidRepoUrl('https://user@github.com/owner/repo')
+    assert.ok(error)
+    assert.match(error, /credentials/)
+  })
+
+  it('rejects URLs with embedded username and password', () => {
+    const error = assertValidRepoUrl('https://user:password@github.com/owner/repo')
+    assert.ok(error)
+    assert.match(error, /credentials/)
+  })
+
+  it('rejects URLs with token as username (common GitHub PAT pattern)', () => {
+    const error = assertValidRepoUrl('https://ghp_abc123:x-oauth-basic@github.com/owner/repo')
+    assert.ok(error)
+    assert.match(error, /credentials/)
+  })
 })

@@ -24,6 +24,12 @@ export function assertValidRepoUrl(repoUrl: unknown): string | null {
     return 'Only GitHub repository URLs are supported'
   }
 
+  // Reject URLs with embedded credentials to prevent credential leakage
+  // through error messages if the clone fails (git stderr includes the full URL).
+  if (url.username || url.password) {
+    return 'URLs must not contain embedded credentials'
+  }
+
   // Expect at least /owner/repo in the path
   const pathParts = url.pathname.split('/').filter(Boolean)
   if (pathParts.length < 2) {
