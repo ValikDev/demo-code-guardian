@@ -21,7 +21,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "node --import tsx --test 'packages/*/src/**/*.test.ts'",
-    "typecheck": "tsc --build --noEmit"
+    "typecheck": "tsc --build --emitDeclarationOnly"
   },
   "packageManager": "pnpm@9.15.4",
   "devDependencies": {
