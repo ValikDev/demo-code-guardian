@@ -25,12 +25,12 @@ RUN pnpm run build
 # --- Stage 3: Production image ---
 FROM node:22-slim AS production
 
-# Install git (for cloning repos) and trivy (for scanning)
+# Copy trivy binary from the official image at a pinned version
+COPY --from=aquasec/trivy:0.69.1 /usr/local/bin/trivy /usr/local/bin/trivy
+
+# Install git (for cloning repos)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git curl && \
-    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin && \
-    apt-get remove -y curl && \
-    apt-get autoremove -y && \
+    apt-get install -y --no-install-recommends git && \
     rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable pnpm
