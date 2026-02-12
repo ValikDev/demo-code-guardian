@@ -21,8 +21,8 @@ export function createApp(ctx: AppContext): Express {
   app.post('/api/scan', validateUrl, scan.startScan)
   app.get('/api/scan/:scanId', scan.getScan)
 
-  // GraphQL API
-  app.all('/graphql', createHandler({
+  // GraphQL API (POST-only — mutations must not be reachable via GET)
+  app.post('/graphql', createHandler({
     schema,
     context: () => ctx,
   }))
